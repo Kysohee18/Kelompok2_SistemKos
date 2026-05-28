@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-?><?php require __DIR__ . '/../includes/layout.php'; ?>
+?>
     <div class="max-w-md mx-auto mt-10 px-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Daftar Akun</h1>
@@ -64,4 +64,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-center text-sm text-gray-500 mt-6">Sudah punya akun? <a href="?page=login" class="text-brand hover:underline font-medium">Masuk</a></p>
         </div>
     </div>
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+
