@@ -2,7 +2,14 @@
 <?php
 $search = trim($_GET['search'] ?? '');
 
-$sql = "SELECT * FROM rooms WHERE status = 'Available'";
+//mengganti query nya
+$sql = "SELECT r.*, 
+        IFNULL(AVG(rev.rating), 0) as avg_rating, 
+        COUNT(rev.id) as total_reviews
+        FROM rooms r 
+        LEFT JOIN room_reviews rev ON r.id = rev.room_id
+        WHERE r.status = 'Available'";
+
 $params = [];
 if ($search !== '') {
     $sql .= " AND (name LIKE ? OR facilities LIKE ?)";
@@ -10,45 +17,76 @@ if ($search !== '') {
     $params[] = $like;
     $params[] = $like;
 }
-$sql .= " ORDER BY created_at DESC";
+//dari order by ke group by
+$sql .= " GROUP BY r.id ORDER BY r.created_at DESC";
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $rooms = $stmt->fetchAll();
-?>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Cari Kost</h1>
-                <p class="text-sm text-gray-500 mt-1">Temukan kost impianmu dengan mudah</p>
-            </div>
-            <?php if ($search !== ''): ?>
-                <a href="?page=catalog" class="text-sm text-brand hover:underline flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    Hapus filter
-                </a>
-            <?php endif; ?>
-        </div>
 
-        <?php if (empty($rooms)): ?>
-            <div class="text-center py-20">
-                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <h2 class="text-xl font-semibold text-gray-600 mb-2">Kost tidak ditemukan</h2>
-                <p class="text-gray-400 text-sm mb-4">
-                    <?= $search ? "Kost dengan kata kunci \"$search\" tidak tersedia." : 'Belum ada kost yang ditambahkan.' ?>
-                </p>
-                <a href="?page=catalog" class="inline-block bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition text-sm font-medium">Lihat Semua Kost</a>
-            </div>
-        <?php else: ?>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <?php foreach ($rooms as $room): ?>
+//logika untuk keranjang/cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_cart') {
+    $userId = (int) ($_SESSION['user_id'] ?? 0);
+    $roomId = (int) ($_POST['room_id'] ?? 0);
+
+    if ($userId === 0) {
+        setFlash('error', 'Silakan login terlebih dahulu untuk menambah ke keranjang.');
+        redirect('?page=login');
+    }
+
+    $checkCart = $pdo->prepare('SELECT id FROM cart WHERE user_id = ? AND room_id = ?');
+    $checkCart->execute([$userId, $roomId]);
+
+    if ($checkCart->fetch()) {
+        setFlash('info', 'Kamar ini sudah ada di dalam keranjang Anda.');
+    } else {
+        $insertCart = $pdo->prepare('INSERT INTO cart (user_id, room_id) VALUES (?, ?)');
+        $insertCart->execute([$userId, $roomId]);
+        setFlash('success', 'Kamar berhasil ditambahkan ke keranjang!');
+    }
+
+    redirect('?page=catalog');
+}
+?>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Cari Kost</h1>
+            <p class="text-sm text-gray-500 mt-1">Temukan kost impianmu dengan mudah</p>
+        </div>
+        <?php if ($search !== ''): ?>
+            <a href="?page=catalog" class="text-sm text-brand hover:underline flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Hapus filter
+            </a>
+        <?php endif; ?>
+    </div>
+
+    <?php if (empty($rooms)): ?>
+        <div class="text-center py-20">
+            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-600 mb-2">Kost tidak ditemukan</h2>
+            <p class="text-gray-400 text-sm mb-4">
+                <?= $search ? "Kost dengan kata kunci \"$search\" tidak tersedia." : 'Belum ada kost yang ditambahkan.' ?>
+            </p>
+            <a href="?page=catalog" class="inline-block bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-emerald-600 transition text-sm font-medium">Lihat Semua Kost</a>
+        </div>
+    <?php else: ?>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <?php foreach ($rooms as $room): ?>
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col overflow-hidden">
                     <div class="relative h-48 bg-gray-200 overflow-hidden">
                         <?php if ($room['image_path'] && file_exists(__DIR__ . '/../' . $room['image_path'])): ?>
                             <img src="<?= e($room['image_path']) ?>" alt="<?= e($room['name']) ?>" class="w-full h-full object-cover">
                         <?php else: ?>
                             <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200">
-                                <svg class="w-12 h-12 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                <svg class="w-12 h-12 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
                             </div>
                         <?php endif; ?>
                         <div class="absolute bottom-0 left-0 bg-kos-purple text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-tr-lg">SUPER RARE KOST</div>
@@ -56,9 +94,17 @@ $rooms = $stmt->fetchAll();
                     <div class="p-4 flex flex-col flex-1">
                         <div class="flex items-center gap-2 text-[11px] mb-2">
                             <span class="border border-gray-300 text-gray-600 rounded px-1.5 py-0.5 font-medium">Campur</span>
-                            <span class="text-yellow-500 flex items-center gap-0.5">
-                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                                4.5
+
+                            <span class="text-yellow-500 flex items-center gap-0.5" title="Rating rata-rata kamar">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+
+                                <?= number_format((float)$room['avg_rating'], 1) ?>
+
+                                <span class="text-gray-400 text-[10px] ml-0.5">
+                                    (<?= (int)$room['total_reviews'] ?>)
+                                </span>
                             </span>
                             <span class="text-red-500 font-medium ml-auto">Sisa 1 kamar</span>
                         </div>
@@ -67,7 +113,9 @@ $rooms = $stmt->fetchAll();
                         <div class="flex-1"></div>
                         <div class="border-t border-gray-100 pt-3 mt-auto">
                             <div class="flex items-center gap-1.5 text-xs mb-1">
-                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
                                 <span class="text-red-500 font-medium">Diskon Spesial</span>
                                 <span class="text-gray-400 line-through ml-auto"><?= formatRupiah((float) $room['price_per_month'] * 1.2) ?></span>
                             </div>
@@ -76,12 +124,25 @@ $rooms = $stmt->fetchAll();
                                 <span class="text-sm text-gray-500">/bln</span>
                             </div>
                         </div>
-                        <a href="?page=booking&room=<?= (int) $room['id'] ?>"
-                           class="mt-3 block w-full bg-brand hover:bg-emerald-600 text-white text-center font-semibold py-2.5 rounded-lg transition text-sm">Pesan Sekarang</a>
+                        <form method="POST" action="" class="mt-3">
+                            <input type="hidden" name="action" value="add_to_cart">
+                            <input type="hidden" name="room_id" value="<?= (int) $room['id'] ?>">
+
+                            <button type="submit"
+                                class="w-full bg-brand hover:bg-emerald-600 text-white text-center font-semibold py-2.5 rounded-lg transition text-sm flex items-center justify-center gap-2">
+
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 110 4 2 2 0 010-4z" />
+                                </svg>
+
+                                Keranjang+
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
 <?php require __DIR__ . '/../includes/footer.php'; ?>
