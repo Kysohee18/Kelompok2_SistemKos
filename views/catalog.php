@@ -1,4 +1,3 @@
-<?php require __DIR__ . '/../includes/layout.php'; ?>
 <?php
 $search = trim($_GET['search'] ?? '');
 
@@ -145,4 +144,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </div>
     <?php endif; ?>
 </div>
-<?php require __DIR__ . '/../includes/footer.php'; ?>
