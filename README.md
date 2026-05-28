@@ -17,7 +17,9 @@
 5. Klik import/go
 <img width="1600" height="120" alt="image" src="https://github.com/user-attachments/assets/5b2693bc-7944-495f-ac27-33909bece81e" />
 
-6. Buka link : http://localhost/Kelompok2_SistemKos/
+6. Ulangi langkah import untuk file seed.sql
+
+7. Buka link : http://localhost/Kelompok2_SistemKos/
 
 **Login:**
 1. Admin :
