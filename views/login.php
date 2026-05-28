@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role']     = $user['role'];
             setFlash('success', 'Selamat datang kembali, ' . e($user['username']) . '!');
-            $redirectUrl = $_SESSION['redirect_after_login'] ?? '?page=catalog';
+            $redirectUrl = $_SESSION['redirect_after_login'] ?? '?page=admin_dashboard';
             unset($_SESSION['redirect_after_login']);
             redirect($redirectUrl);
         }
     }
 }
-?><?php require __DIR__ . '/../includes/layout.php'; ?>
+?>
     <div class="max-w-md mx-auto mt-10 px-4">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h1 class="text-2xl font-bold text-gray-900 mb-6 text-center">Masuk</h1>
@@ -47,4 +47,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-center text-sm text-gray-500 mt-6">Belum punya akun? <a href="?page=register" class="text-brand hover:underline font-medium">Daftar</a></p>
         </div>
     </div>
-<?php require __DIR__ . '/../includes/footer.php'; ?>
+
