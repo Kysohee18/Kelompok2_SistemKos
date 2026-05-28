@@ -19,10 +19,10 @@
 
 6. Buka link : http://localhost/Kelompok2_SistemKos/
 
-   Login:
-   1. Admin :
-      a. username : admin
-      b. password : admin123
-   3. User :
-      a. username : user
-      b. password : user123
+**Login:**
+1. Admin :
+   - username : admin
+   - password : admin123
+2. User :
+   - username : user
+   - password : user123
