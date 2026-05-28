@@ -1,11 +1,11 @@
-### ⚠️Kalau mau import databasenya yang databaseUpdate.sql
+###⚠️Kalau mau import databasenya yang databaseUpdate.sql
 
-cara running : (contohnya pakai command promt)
+**cara running : (contohnya pakai command promt)**
 1. buka cmd
 2. cd/ change directory ke htdocs(kalo pake XAMPP) atau ke www(kalo pakai laragon)
 3. ketik : git clone https://github.com/Kysohee18/Kelompok2_SistemKos.git
-
-   Laragon/Xampp:
+<br>
+**   Laragon/Xampp:**
 1. Start Apache dan MySql
 2. Masuk ke phpMyAdmin atau kalo di laragon : "https://localhost/phpmyadmin/index.php"
 3. Setelah login klik new
