@@ -1,12 +1,13 @@
 <?php
 
-$action = $_GET['action'] ?? '';
+$page = $_GET['page'] ?? '';
 
-if ($action === 'logout') {
+if ($page === 'logout') {
     $_SESSION = [];
-    if (ini_get('session.use_cookies')) {
-        setcookie(session_name(), '', time() - 3600, '/');
-    }
+
+    session_unset();
     session_destroy();
-    redirect('?page=catalog');
+
+    header("Location: ?page=home");
+    exit;
 }
