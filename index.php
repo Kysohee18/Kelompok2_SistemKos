@@ -3,13 +3,20 @@
 // index.php — Front Controller Router
 // website_ready — Monolithic Demo
 // ============================================================
+ob_start(); //tambahannya
 
 require_once __DIR__ . '/config.php';
 
 // --- Route Definition ---
 $routes = [
-    // Public
+    // Public | ada tambahan routenya
+    'home'               => ['view' => 'home',               'auth' => false, 'admin' => false],
+    'profile'            => ['view' => 'profile',            'auth' => false, 'admin' => false],
     'catalog'            => ['view' => 'catalog',            'auth' => false, 'admin' => false],
+    'cart'               => ['view' => 'cart',               'auth' => false, 'admin' => false],
+    'orders'             => ['view' => 'orders',             'auth' => false, 'admin' => false],
+    'order_detail'       => ['view' => 'order_detail',       'auth' => false, 'admin' => false],
+    'review'             => ['view' => 'review',             'auth' => false, 'admin' => false],
     'login'              => ['view' => 'login',              'auth' => false, 'admin' => false],
     'register'           => ['view' => 'register',           'auth' => false, 'admin' => false],
     'logout'             => ['action' => 'auth',             'auth' => false, 'admin' => false],
@@ -23,7 +30,7 @@ $routes = [
     'admin_process'      => ['action' => 'admin_process',    'auth' => true,  'admin' => true],
 ];
 
-$page  = $_GET['page'] ?? 'catalog';
+$page  = $_GET['page'] ?? 'home'; //ganti default page nya jd home
 $route = $routes[$page] ?? null;
 
 // --- 404 ---
@@ -62,4 +69,19 @@ if (!file_exists($path)) {
     die('Module tidak ditemukan: ' . htmlspecialchars(basename($path), ENT_QUOTES, 'UTF-8'));
 }
 
-require $path;
+//diatur require path nya susunanya gmn, di sini ngaturnya
+if (isset($route['action'])) {
+
+    require $path;
+
+} else {
+
+    require __DIR__ . '/includes/layout.php';
+
+    require $path;
+
+    require __DIR__ . '/includes/footer.php';
+}
+
+//tambahin ob_end_flush();
+ob_end_flush();
