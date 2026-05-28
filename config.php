@@ -17,7 +17,7 @@ define('DB_HOST', 'localhost');
 define('DB_PORT', '3306');
 define('DB_NAME', 'kosbooking');
 define('DB_USER', 'root');
-define('DB_PASS', 'Magelang2005');
+define('DB_PASS', ''); //ini "Magelang2005" diganti jadi kosong karena rootnya passwordnya kosong, jadi sesuaikan dengan root masing2
 define('DB_CHARSET', 'utf8mb4');
 
 define('BASE_PATH', __DIR__);
