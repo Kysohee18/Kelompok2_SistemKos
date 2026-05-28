@@ -63,7 +63,7 @@ VALUES
 (6, 'Kost Premium Solo Baru',
  'Kost premium di kawasan Solo Baru. Strategis dekat dengan pusat bisnis dan kuliner.',
  'K. Mandi Dalam - WiFi 50Mbps - AC - Lemari - Meja Kerja - Dispenser - Parkir Mobil - CCTV - Listrik Token - Air PDAM',
- 1850000.00, 'Available', 'uploads/rooms/kostPremium.jpg', '2026-05-26 11:57:04'),
+ 1850000.00, 'Available', 'uploads/rooms/kostPremium.webp', '2026-05-26 11:57:04'),
 
 (7, 'Kost Sederhana Mulya',
  'Kost ekonomis dengan fasilitas lengkap. Cocok untuk karyawan dan mahasiswa budget.',
@@ -73,7 +73,7 @@ VALUES
 (8, 'Kost Eksklusif Purwosari',
  'Butik kost dengan desain interior Eropa. Layanan housekeeping 2x seminggu.',
  'K. Mandi Dalam - WiFi 100Mbps - AC - Smart TV - Kulkas - Microwave - Water Heater - Lemari Walk-in - Meja Kerja - Sofa Bed - Parkir Mobil - Housekeeping - Laundry - GYM - Kolam Renang',
- 3500000.00, 'Available', 'uploads/rooms/kostEksklusif.jpg', '2026-05-26 11:57:04');
+ 3500000.00, 'Available', 'uploads/rooms/kostEks.jpg', '2026-05-26 11:57:04');
 
 -- ============================================================
 -- SEED TRANSACTIONS
