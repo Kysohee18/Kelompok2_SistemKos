@@ -1,0 +1,157 @@
+@startuml Class_Diagram_Kos_Booking
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+
+' --- DEFINISI CLASS ---
+
+abstract class User {
+    + id : int
+    + name : string
+    + email : string
+    + password : string
+    + phone : string
+    + address : string
+    + status : string
+    + login()
+    + logout()
+    + register()
+    + updateProfile()
+}
+
+class Owner {
+    + bankAccount : string
+    + ktpNumber : string
+    + manageBoardingHouse()
+    + approveBooking()
+    + viewIncome()
+}
+
+class Tenant {
+    + occupation : string
+    + emergencyContact : string
+    + makeBooking()
+    + makePayment()
+    + viewHistory()
+}
+
+class BoardingHouseComplex {
+    + id : int
+    + name : string
+    + address : string
+    + city : string
+    + description : text
+    + rules : text
+    + facilities : text
+    + addRoom()
+    + removeRoom()
+    + updateFacilities()
+    + getTotalIncome()
+}
+
+class Room {
+    + roomNumber : string
+    + type : string
+    + price : decimal
+    + status : string
+    + facilities : text
+    + image_path : string
+    + checkAvailability()
+    + updateStatus()
+    + getRoomDetails()
+}
+
+class Facility <<entity>> {
+    + id : int
+    + name : string
+    + description : text
+    + quantity : int
+    + createFacility()
+    + updateFacility()
+}
+
+class Booking {
+    + id : int
+    + startDate : date
+    + endDate : date
+    + duration : int
+    + totalAmount : decimal
+    + status : string
+    + createBooking()
+    + cancelBooking()
+    + approveBooking()
+    + checkIn()
+    + checkOut()
+}
+
+class Payment {
+    + id : int
+    + amount : decimal
+    + method : string
+    + status : string
+    + paymentDate : timestamp
+    + proofImage : string
+    + processPayment()
+    + validatePayment()
+    + refundPayment()
+    + uploadProof()
+}
+
+class RoomBooking {
+    + id : int
+    + startDate : date
+    + endDate : date
+    + deposit : decimal
+    + rating : int
+    + region_n : string
+    + createRoomBooking()
+    + validateBooking()
+}
+
+class OwnerFinanceComplex {
+    + totalIncome : decimal
+    + totalExpense : decimal
+    + netIncome : decimal
+    + approveTransaction()
+    + viewFinancialReport()
+    + exportTable()
+}
+
+class OwnerRoomBooking {
+    + bookingList : list
+    + approveBooking()
+    + rejectBooking()
+    + viewAllBookings()
+}
+
+class Notification <<entity>> {
+    + id : int
+    + message : text
+    + type : string
+    + isRead : boolean
+    + createdAt : timestamp
+    + sendNotification()
+    + markAsRead()
+}
+
+' --- RELASI ANTAR CLASS ---
+
+' Inheritance (Extends)
+User <|-- Owner
+User <|-- Tenant
+
+' Aggregation & Composition sesuai catatan sintaks dokumen
+BoardingHouseComplex "1" o-- "0..*" Room : aggregation
+Room "1" o-- "0..*" Facility : aggregation
+
+Booking "1" *-- "1" Payment : composition
+
+RoomBooking "0..*" o-- "1" Room : aggregation
+RoomBooking "0..*" o-- "1" Tenant : aggregation
+
+OwnerFinanceComplex "1" o-- "1" BoardingHouseComplex : aggregation
+
+' Manages / Ketergantungan Kontrol
+OwnerRoomBooking ..> Booking : manages
+
+@enduml
