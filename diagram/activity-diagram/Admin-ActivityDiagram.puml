@@ -1,0 +1,40 @@
+@startuml Activity_Admin_Manajemen
+|Admin (Pengelola Kos)|
+start
+:Membuka Dashboard Properti;
+
+split
+   :Akses Menu Manajemen Data Kamar;
+   :Melakukan CRUD Kamar\n(Tambah/Ubah/Hapus Data, Foto, Harga);
+   |Sistem|
+   :Memperbarui Database MySQL;
+split end
+
+|Admin (Pengelola Kos)|
+:Melihat Daftar Pesanan masuk;
+:Memeriksa Unggahan Bukti Pembayaran;
+
+if (Bukti Pembayaran Valid?) then (Ya)
+  :Menyetujui / Memvalidasi Transaksi;
+  |Sistem|
+  :Mengubah Status Kamar/Pesanan\nmenjadi "Booked" / "Active";
+  :Memperbarui Status Kamar Real-time;
+else (Tidak)
+  |Admin (Pengelola Kos)|
+  :Menolak Transaksi;
+  |Sistem|
+  :Mengubah Status Kamar/Pesanan\nmenjadi "Cancelled/Rejected";
+endif
+
+|Sistem|
+if (Masa Sewa Penghuni Berakhir?) then (Ya)
+  |Calon Penghuni|
+  :Mengakses Modul Ulasan;
+  :Memberikan Penilaian Bintang & Ulasan\n(Fitur Opsional setelah Masa Sewa Berakhir);
+  |Sistem|
+  :Menampilkan Ulasan di Katalog Properti;
+else (Tidak)
+endif
+
+stop
+@enduml

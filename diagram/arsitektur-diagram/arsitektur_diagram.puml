@@ -1,0 +1,59 @@
+@startuml
+title DIAGRAM ARSITEKTUR (3-TIER ARCHITECTURE)\nSistem Pemesanan Kamar Kos / Homestay Online
+
+skinparam shadowing false
+skinparam linetype ortho
+skinparam node {
+    BackgroundColor #EBF5FB
+    BorderColor #2980B9
+    FontName Arial
+}
+skinparam component {
+    BackgroundColor #F8F9FA
+    BorderColor #2C3E50
+    FontName Arial
+}
+skinparam database {
+    BackgroundColor #FEF9E7
+    BorderColor #D35400
+    FontName Arial
+}
+
+node "Client Tier (Presentation Layer)" {
+    component "Web Browser\n(User & Admin)" as Browser
+    component "UI Framework\n(Tailwind CSS / Bootstrap)" as UI
+    Browser --> UI : Renders Interface
+}
+
+node "Web Server Tier (Application Layer)" {
+    component "Apache Server\n(XAMPP / Laragon)" as WebServer
+    
+    package "PHP Native Application" {
+        component "Front Controller / Router\n(index.php)" as Router
+        component "Logic Controllers\n(auth.php, booking.php, admin_process.php)" as Controllers
+        component "State Machine\n(state_machine.php)" as StateMachine
+    }
+}
+
+node "Database Tier (Data Layer)" {
+    database "MySQL Database\n(kosbooking)" as DB {
+        [Tabel: users]
+        [Tabel: rooms]
+        [Tabel: transactions]
+        [Tabel: cart]
+        [Tabel: room_reviews]
+    }
+}
+
+' Alur Interaksi Komponen
+Browser ----> WebServer : 1. Kirim HTTP Request (GET/POST)
+WebServer ----> Browser : 6. Kembalikan HTTP Response (HTML/CSS/JS)
+
+WebServer --> Router : 2. Meneruskan Request
+Router --> Controllers : 3. Memanggil Fungsi Logika
+Controllers --> StateMachine : 4. Validasi Transisi Status Pemesanan
+
+Controllers ----> DB : 5. Eksekusi SQL Query (PDO / MySQLi)
+DB ----> Controllers : Mengembalikan Data Hasil Query
+
+@enduml

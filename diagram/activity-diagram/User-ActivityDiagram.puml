@@ -1,0 +1,31 @@
+@startuml Activity_Pemesanan_Kamar
+|Calon Penghuni|
+start
+:Membuka Platform Web Kos/Homestay;
+:Melihat Katalog Kamar & Detail Fasilitas;
+
+if (Ingin menyaring kamar?) then (Ya)
+  :Menggunakan Kolom Pencarian\n(Filter Nama/Fasilitas) [Opsional];
+else (Tidak)
+endif
+
+:Memilih Kamar yang Diinginkan;
+:Menambahkan Kamar ke Keranjang Pemesanan;
+:Menyesuaikan Durasi Sewa\n(Jumlah Bulan / Malam);
+:Melakukan Checkout;
+
+|Sistem|
+:Menghitung Total Biaya Otomatis\n(Biaya Sewa + Deposit Awal);
+
+|Calon Penghuni|
+:Menerima Rincian Total Biaya;
+:Melakukan Transfer Pembayaran;
+:Mengunggah Berkas Gambar Bukti Transfer;
+
+|Sistem|
+:Menyimpan Bukti Transfer;
+:Mengubah Status Kamar/Pesanan menjadi "Pending";
+:Menampilkan Status Kamar Real-time ke User;
+
+stop
+@enduml

@@ -1,0 +1,69 @@
+@startuml Use_Case_Sistem_Pemesanan
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Calon Penghuni\n(User)" as User
+actor "Sistem" as Sistem
+actor "Pengelola Kos\n(Admin)" as Admin
+
+rectangle "Use Case Sistem Pemesanan Kamar Kos / Homestay Online" {
+    
+    ' Use Cases untuk User
+    usecase "Melihat Katalog Kamar\n& Detail Fasilitas" as UC_Katalog
+    usecase "Mencari & Filter Kamar\n(Opsional)" as UC_Cari
+    usecase "Mengelola Keranjang\nPemesanan\n(Atur Durasi Sewa)" as UC_Keranjang
+    usecase "Melakukan Checkout" as UC_Checkout
+    usecase "Memberikan Ulasan &\nPenilaian Properti\n(Opsional)" as UC_Ulasan
+    usecase "Mengunggah Bukti\nTransfer Pembayaran" as UC_Upload
+    usecase "Melihat Status Kamar\n& Pesanan Real-time" as UC_StatusUser
+    
+    ' Use Cases Bersama / Autentikasi
+    usecase "Login" as UC_Login
+    usecase "Registrasi" as UC_Registrasi
+    
+    ' Use Cases untuk Sistem
+    usecase "Menghitung Biaya + Deposit" as UC_Hitung
+    usecase "Memvalidasi Bukti\nPembayaran Transaksi" as UC_Validasi
+    
+    ' Use Cases untuk Admin
+    usecase "Mengelola Status Kamar\n& Pesanan Real-time" as UC_StatusAdmin
+    usecase "Manajemen Data Kamar\n(CRUD Kamar, Foto, Harga)" as UC_CRUD
+    
+    ' --- Relasi Antar Use Case (Include & Extend) ---
+    ' Hubungan Katalog dan Cari
+    UC_Katalog <.. UC_Cari : <<extend>>
+    UC_Cari ..> UC_Login : <<include>>
+    
+    ' Hubungan Keranjang ke Login
+    UC_Keranjang ..> UC_Login : <<include>>
+    
+    ' Hubungan Checkout, Upload, dan Ulasan
+    UC_Checkout <.. UC_Ulasan : <<extend>>
+    UC_Checkout ..> UC_Upload : <<include>>
+    UC_Ulasan ..> UC_Login : <<include>>
+    UC_Upload ..> UC_Login : <<include>>
+    
+    ' Hubungan Status User ke Login
+    UC_StatusUser ..> UC_Login : <<include>>
+    
+    ' Hubungan Login dan Registrasi
+    UC_Login ..> UC_Registrasi : <<include>>
+    
+    ' Hubungan Admin ke Login
+    UC_StatusAdmin ..> UC_Login : <<include>>
+    UC_CRUD ..> UC_Login : <<include>>
+}
+
+' --- Relasi Aktor ke Use Case ---
+User --> UC_Katalog
+User --> UC_Keranjang
+User --> UC_Checkout
+User --> UC_StatusUser
+
+Sistem --> UC_Hitung
+Sistem --> UC_Validasi
+
+Admin --> UC_StatusAdmin
+Admin --> UC_CRUD
+
+@enduml

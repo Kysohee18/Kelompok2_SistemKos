@@ -1,0 +1,81 @@
+@startuml KosBooking_Pro_ERD
+
+' Konfigurasi Tampilan
+skinparam linetype ortho
+skinparam shadowing false
+skinparam class {
+    BackgroundColor White
+    ArrowColor #2C3E50
+    BorderColor #2C3E50
+}
+
+package "KosBooking Pro Schema" {
+
+    entity "users" as users {
+        * id : INT <<generated>>
+        --
+        * username : VARCHAR(50) <<unique>>
+        * password_hash : VARCHAR(255)
+        * role : ENUM('admin', 'user')
+        * created_at : TIMESTAMP
+    }
+
+    entity "rooms" as rooms {
+        * id : INT <<generated>>
+        --
+        * name : VARCHAR(100)
+        description : TEXT
+        facilities : TEXT
+        * price_per_month : DECIMAL(12,2)
+        * status : ENUM('Available', 'Maintenance')
+        image_path : VARCHAR(255)
+        * created_at : TIMESTAMP
+    }
+
+    entity "transactions" as transactions {
+        * id : INT <<generated>>
+        --
+        * user_id : INT <<FK>>
+        * room_id : INT <<FK>>
+        * duration_months : INT
+        * deposit : DECIMAL(12,2)
+        * total_amount : DECIMAL(12,2)
+        * status : ENUM('DRAFT', 'PENDING_PAYMENT', 'WAITING_VALIDATION', 'ACTIVE', 'CANCELLED')
+        payment_proof : VARCHAR(255)
+        * created_at : TIMESTAMP
+        expires_at : TIMESTAMP
+    }
+
+    entity "cart" as cart {
+        * id : INT <<generated>>
+        --
+        * user_id : INT <<FK>>
+        * room_id : INT <<FK>>
+        * quantity : INT
+        created_at : TIMESTAMP
+    }
+
+    entity "room_reviews" as room_reviews {
+        * id : INT <<generated>>
+        --
+        * room_id : INT <<FK>>
+        * user_id : INT <<FK>>
+        * transaction_id : INT
+        * rating : INT
+        comment : TEXT
+        created_at : TIMESTAMP
+    }
+
+}
+
+' Relasi Antar Tabel (Kardinalitas)
+users "1" --{ "0..*" transactions : "membuat"
+rooms "1" --{ "0..*" transactions : "disewa dalam"
+
+users "1" --{ "0..*" cart : "memiliki"
+rooms "1" --{ "0..*" cart : "dimasukkan ke"
+
+rooms "1" --{ "0..*" room_reviews : "menerima"
+users "1" --{ "0..*" room_reviews : "menulis"
+
+@enduml

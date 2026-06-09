@@ -1,0 +1,238 @@
+@startuml SistemKos_ClassDiagram
+
+title Class Diagram — Sistem Kos (KosBooking Pro)
+
+skinparam classAttributeIconSize 0
+skinparam classFontSize 13
+skinparam classFontName Arial
+skinparam classBackgroundColor #F9FAFB
+skinparam classBorderColor #6B7280
+skinparam classHeaderBackgroundColor #1D4ED8
+skinparam classHeaderFontColor #FFFFFF
+skinparam arrowColor #374151
+skinparam linetype ortho
+
+' ============================================================
+' ENTITY / MODEL CLASSES (from DB schema)
+' ============================================================
+
+class User {
+    - id : int <<PK>>
+    - username : string
+    - password_hash : string
+    - role : enum {admin, user}
+    - created_at : timestamp
+    --
+    + isAdmin() : bool
+    + isAuthenticated() : bool
+    + authId() : int
+}
+
+class Room {
+    - id : int <<PK>>
+    - name : string
+    - description : text
+    - facilities : text
+    - price_per_month : decimal
+    - status : enum {Available, Maintenance}
+    - image_path : string
+    - created_at : timestamp
+    --
+    + isAvailable() : bool
+}
+
+class Transaction {
+    - id : int <<PK>>
+    - user_id : int <<FK>>
+    - room_id : int <<FK>>
+    - duration_months : int
+    - deposit : decimal
+    - total_amount : decimal
+    - status : enum {DRAFT, PENDING_PAYMENT,\n  WAITING_VALIDATION, ACTIVE, CANCELLED}
+    - payment_proof : string
+    - created_at : timestamp
+    - expires_at : timestamp
+    --
+    + calculateTotal() : decimal
+    + calculateDeposit() : decimal
+}
+
+class Cart {
+    - id : int <<PK>>
+    - user_id : int <<FK>>
+    - room_id : int <<FK>>
+    - quantity : int
+    - created_at : timestamp
+}
+
+class RoomReview {
+    - id : int <<PK>>
+    - room_id : int <<FK>>
+    - user_id : int <<FK>>
+    - transaction_id : int
+    - rating : int
+    - comment : text
+    - created_at : timestamp
+}
+
+' ============================================================
+' STATE MACHINE
+' ============================================================
+
+class StateMachine {
+    - ALLOWED_TRANSITIONS : array <<const>>
+    - LOCK_STATUSES : array <<const>>
+    --
+    + canTransition(current: string, next: string) : bool
+    + isRoomLocked(pdo: PDO, roomId: int) : bool
+    + transitionStatus(pdo: PDO, txId: int,\n  newStatus: string, userId: int) : bool
+    + createDraftTransaction(pdo: PDO,\n  userId: int, roomId: int,\n  durationMonths: int) : int
+    + cleanupExpiredDrafts(pdo: PDO) : void
+    + getRemainingTTL(pdo: PDO, txId: int) : int
+}
+
+' ============================================================
+' CONTROLLER / ACTION CLASSES
+' ============================================================
+
+class AuthController {
+    + logout() : void
+}
+
+class BookingController {
+    + processBooking(roomId: int,\n  userId: int, duration: int) : void
+}
+
+class AdminProcessController {
+    + deleteRoom(roomId: int) : void
+    + saveRoom(roomId: int, data: array) : void
+    + approveTx(txId: int) : void
+    + rejectTx(txId: int) : void
+}
+
+class AdminVerifyController {
+    + approveTransaction(txId: int) : void
+    + rejectTransaction(txId: int) : void
+}
+
+class FrontController {
+    - routes : array
+    --
+    + dispatch(page: string) : void
+    + authMiddleware() : void
+    + adminMiddleware() : void
+}
+
+' ============================================================
+' HELPER / UTILITY CLASSES
+' ============================================================
+
+class Helpers {
+    + formatRupiah(amount: float) : string
+    + e(value: string) : string
+    + redirect(url: string) : void
+    + flash(key: string) : string
+    + setFlash(key: string, value: string) : void
+    + isAuthenticated() : bool
+    + isAdmin() : bool
+    + authId() : int
+    + validateFileType(file: array,\n  allowed: array) : bool
+    + validateFileSize(file: array,\n  maxMb: float) : bool
+}
+
+class Database {
+    - host : string
+    - port : string
+    - dbname : string
+    - user : string
+    - password : string
+    - charset : string
+    --
+    + getConnection() : PDO
+}
+
+' ============================================================
+' VIEW CLASSES
+' ============================================================
+
+class LayoutView {
+    + render(page: string) : void
+    + renderNavbar() : void
+}
+
+class AdminDashboardView {
+    + showRooms() : void
+    + showTransactions() : void
+    + showInventory() : void
+}
+
+class UserView {
+    + showCatalog() : void
+    + showCart() : void
+    + showOrders() : void
+    + showOrderDetail() : void
+    + showCheckout() : void
+    + showBooking() : void
+    + showReview() : void
+    + showProfile() : void
+    + showLogin() : void
+    + showRegister() : void
+}
+
+' ============================================================
+' TRANSACTION STATUS NOTES
+' ============================================================
+
+note right of Transaction
+  **State Machine Flow:**
+  DRAFT → PENDING_PAYMENT
+  PENDING_PAYMENT → WAITING_VALIDATION
+  WAITING_VALIDATION → ACTIVE
+  Any state → CANCELLED
+  DRAFT expires after 15 minutes
+end note
+
+note right of StateMachine
+  **LOCK_STATUSES:**
+  DRAFT (if not expired),
+  PENDING_PAYMENT,
+  WAITING_VALIDATION,
+  ACTIVE
+end note
+
+' ============================================================
+' RELATIONSHIPS
+' ============================================================
+
+' DB Associations
+User "1" o-- "0..*" Transaction : places >
+Room "1" o-- "0..*" Transaction : reserved by >
+User "1" o-- "0..*" Cart : has >
+Room "1" o-- "0..*" Cart : added to >
+User "1" o-- "0..*" RoomReview : writes >
+Room "1" o-- "0..*" RoomReview : receives >
+
+' Controller -> Model dependencies
+BookingController ..> StateMachine : uses
+BookingController ..> Room : checks
+BookingController ..> Transaction : creates
+
+AdminProcessController ..> Room : manages
+AdminProcessController ..> StateMachine : uses
+
+AdminVerifyController ..> StateMachine : uses
+
+FrontController --> AuthController : routes to
+FrontController --> BookingController : routes to
+FrontController --> AdminProcessController : routes to
+FrontController --> AdminVerifyController : routes to
+FrontController --> AdminDashboardView : routes to
+FrontController --> UserView : routes to
+FrontController --> LayoutView : wraps
+
+StateMachine ..> Transaction : transitions
+
+Database <.. FrontController : instantiates
+Helpers <.. FrontController : uses
+
+@enduml

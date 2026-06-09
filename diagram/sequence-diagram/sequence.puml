@@ -1,0 +1,94 @@
+@startuml Sequence_Diagram_Pemesanan
+autonumber
+
+actor "Calon Penghuni" as User
+boundary "Katalog & Cart (Kamar.php)" as Cart
+control "Proses Transaksi (Checkout.php)" as Tx
+database "Database MySQL" as DB
+
+== Proses Memasukkan ke Keranjang (Cart) ==
+
+User -> Cart : Lihat Katalog & Pilih Kamar
+User -> Cart : Tentukan Durasi Sewa (Bulan/Malam)
+activate Cart
+Cart -> Cart : Hitung Total Sementara (Durasi x Harga)
+User -> Cart : Klik "Masukkan Keranjang"
+deactivate Cart
+
+== Proses Checkout ==
+
+User -> Cart : Buka Halaman Keranjang & Klik "Checkout"
+activate Cart
+Cart -> Tx : Kirim Data Keranjang & Durasi
+activate Tx
+Tx -> Tx : Hitung Total Biaya + Deposit Awal
+Tx -> DB : Simpan Data Pesanan Baru (Status: Pending)
+activate DB
+DB --> Tx : Confirm Save
+deactivate DB
+Tx --> Cart : Tampilkan Halaman Pembayaran & Total Biaya
+deactivate Tx
+deactivate Cart
+
+== Proses Unggah Bukti Pembayaran ==
+
+User -> Cart : Unggah Berkas Gambar Bukti Transfer
+activate Cart
+Cart -> Tx : Upload Bukti Pembayaran
+activate Tx
+Tx -> DB : Update Kolom Bukti & Status Transaksi
+activate DB
+DB --> Tx : Confirm Update
+deactivate DB
+Tx --> Cart : Tampilkan Notifikasi "Menunggu Validasi Admin"
+deactivate Tx
+Cart --> User : Pesanan Selesai Diproses Sementara
+deactivate Cart
+
+@enduml
+
+/'-------------------------------------------------------'/
+
+@startuml Sequence_Diagram_Validasi_Admin
+autonumber
+
+actor "Admin (Pemilik Kos)" as Admin
+boundary "Dashboard Admin (Dashboard.php)" as Dash
+control "Sistem Validasi (Verifikasi.php)" as Valid
+database "Database MySQL" as DB
+
+Admin -> Dash : Buka Menu Validasi Pembayaran
+activate Dash
+
+Dash -> Valid : Request Data Transaksi (Status: Pending)
+activate Valid
+
+Valid -> DB : Query Transaksi & Bukti Gambar
+activate DB
+
+DB --> Valid : Return Data Transaksi
+deactivate DB
+
+Valid --> Dash : Tampilkan Daftar Bukti Pembayaran
+deactivate Valid
+
+Admin -> Dash : Klik Tombol "Validasi / Setujui"
+
+Dash -> Valid : Proses Verifikasi Pembayaran (ID_Transaksi)
+activate Valid
+
+Valid -> DB : Update Status Transaksi (Status: Success)
+activate DB
+
+Valid -> DB : Update Status Kamar Real-time (Status: Booked / Active)
+
+DB --> Valid : Confirm All Updates
+deactivate DB
+
+Valid --> Dash : Tampilkan Notifikasi "Validasi Berhasil"
+deactivate Valid
+
+Dash --> Admin : Dashboard Memperbarui Tampilan Status Kamar Terbaru
+deactivate Dash
+
+@enduml
