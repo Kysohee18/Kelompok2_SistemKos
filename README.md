@@ -19,7 +19,7 @@ Aplikasi web berbasis sistem informasi manajemen dan pemesanan kamar kos/homesta
 
 ## 👥 Analisis Use Case Sistem
 
-<img width="1216" height="1084" alt="Use_Case_Sistem_Pemesanan" src="https://github.com/user-attachments/assets/b5841383-6ad0-412f-8a30-44e6cea4d6e3" />
+<img width="1892" height="694" alt="Use_Case_Sistem_Pemesanan" src="https://github.com/user-attachments/assets/5795f271-492c-4b34-9a4d-d8b912b825f8" />
 
 Aplikasi ini membagi hak akses ke dalam 2 aktor utama (Admin dan User) dengan rincian use case esensial sebagai berikut:
 
